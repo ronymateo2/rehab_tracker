@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ArrowLeft, Activity, TrendingDown, TrendingUp, Minus, Dumbbell, StickyNote } from 'lucide-react'
 import PainChart from '@/components/PainChart'
 import SessionForm from '@/components/SessionForm'
+import DeleteLesionButton from '@/components/DeleteLesionButton'
 import { format, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { painColor } from '@/lib/utils'
@@ -79,6 +80,7 @@ export default async function LesionPage({ params }: { params: { id: string } })
               </div>
             )}
             <SessionForm lesionId={lesion.id} userId={user.id} />
+            <DeleteLesionButton lesionId={lesion.id} />
           </div>
         </div>
 

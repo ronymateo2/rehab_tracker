@@ -15,20 +15,7 @@ export async function GET(request: Request) {
       // Create user's default lesions if they don't have any
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
-        // Check if they have lesions
-        const { count } = await supabase
-          .from('lesions')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id)
-
-        if (count === 0) {
-          const DEFAULT_LESIONS = [
-            { user_id: user.id, name: 'Hombro derecho', zone: 'Supraespinoso / Labrum', color: '#3266ad' },
-            { user_id: user.id, name: 'Rodilla', zone: 'Condromalacia rotuliana', color: '#9B5A1A' },
-            { user_id: user.id, name: 'Pubalgia', zone: 'Región inguinal / Aductores', color: '#2D7D6F' },
-          ]
-          await supabase.from('lesions').insert(DEFAULT_LESIONS)
-        }
+        // We no longer create default lesions here
       }
 
       const forwardedHost = request.headers.get('x-forwarded-host') 
