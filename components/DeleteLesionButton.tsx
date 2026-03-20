@@ -43,11 +43,12 @@ export default function DeleteLesionButton({ lesionId }: DeleteLesionButtonProps
     <>
       <button 
         onClick={() => setIsOpen(true)}
-        className="p-1.5 rounded-lg active:scale-90 transition-transform flex items-center justify-center"
-        style={{ color: 'var(--red)', background: 'color-mix(in srgb, var(--red) 10%, transparent)' }}
+        className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl active:scale-[0.98] transition-transform"
+        style={{ color: 'var(--red)', background: 'color-mix(in srgb, var(--red) 8%, transparent)' }}
         aria-label="Eliminar lesión"
       >
-        <Trash2 className="w-4 h-4" />
+        <Trash2 className="w-5 h-5" />
+        <span className="text-[15px] font-semibold">Eliminar lesión</span>
       </button>
 
       {isOpen && (

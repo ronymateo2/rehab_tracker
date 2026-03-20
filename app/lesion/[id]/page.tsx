@@ -57,9 +57,9 @@ export default async function LesionPage({ params }: { params: { id: string } })
   return (
     <div className="space-y-6">
         {/* Header — same style as dashboard */}
-        <div className="flex items-center gap-3">
-          <Link href="/dashboard" className="p-1.5 -ml-1.5 rounded-lg active:scale-90 transition-transform" style={{ color: 'var(--accent)' }}>
-            <ArrowLeft className="w-5 h-5" />
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Link href="/dashboard" className="p-3 -ml-3 rounded-xl active:scale-90 transition-transform flex items-center justify-center shrink-0" style={{ color: 'var(--accent)' }}>
+            <ArrowLeft className="w-6 h-6" />
           </Link>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2.5">
@@ -80,7 +80,6 @@ export default async function LesionPage({ params }: { params: { id: string } })
               </div>
             )}
             <SessionForm lesionId={lesion.id} userId={user.id} />
-            <DeleteLesionButton lesionId={lesion.id} />
           </div>
         </div>
 
@@ -170,6 +169,11 @@ export default async function LesionPage({ params }: { params: { id: string } })
               })}
             </div>
           )}
+        </div>
+
+        {/* Zona de peligro */}
+        <div className="pt-4 pb-8">
+          <DeleteLesionButton lesionId={lesion.id} />
         </div>
     </div>
   )
