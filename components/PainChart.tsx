@@ -7,7 +7,7 @@ interface PainChartProps {
   color: string
 }
 
-const CustomTooltip = ({ active, payload }: { active?: boolean, payload?: any[] }) => {
+const CustomTooltip = ({ active, payload }: { active?: boolean, payload?: { value: number; payload: { fullLabel: string } }[] }) => {
   if (active && payload && payload.length) {
     return (
       <div className="px-3.5 py-2.5 rounded-xl text-center" style={{ background: 'var(--card)', boxShadow: 'var(--shadow-lg)', border: '0.5px solid var(--divider)' }}>
