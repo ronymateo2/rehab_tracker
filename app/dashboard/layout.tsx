@@ -20,7 +20,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="flex flex-col min-h-[100dvh]" style={{ background: 'var(--bg)' }}>
       {/* Nav */}
       <header 
-        className="sticky top-0 z-50 safe-top"
+        className="sticky top-0 z-50 pt-safe"
         style={{ 
           background: 'color-mix(in srgb, var(--bg) 80%, transparent)',
           backdropFilter: 'saturate(180%) blur(20px)',
