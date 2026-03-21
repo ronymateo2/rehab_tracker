@@ -14,7 +14,7 @@ Rehab Tracker es una plataforma web minimalista y moderna diseñada para el segu
 - **Gráficas de Evolución**: Visualización clara del progreso mediante gráficas de área suaves con gradientes.
 - **Historial Detallado**: Registro de ejercicios realizados y notas adicionales por cada sesión.
 - **Consistencia Total**: Misma experiencia premium en escritorio y móvil, con soporte automático para Dark Mode.
-- **Autenticación Segura**: Login mediante Magic Link (OTP) a través de Supabase Auth.
+- **Autenticación Segura**: Login con Google Identity enlazado a Supabase Auth, sin depender de Magic Links por correo.
 
 ## 🛠️ Stack Tecnológico
 
@@ -44,7 +44,13 @@ Rehab Tracker es una plataforma web minimalista y moderna diseñada para el segu
     NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_anon_key_de_supabase
     ```
 
-4.  **Ejecutar en desarrollo:**
+4.  **Configurar autenticación de Google:**
+    - En Google Cloud crea un OAuth Client de tipo `Web application`.
+    - En Supabase activa el proveedor `Google`.
+    - Configura en Supabase el client ID y client secret de ese cliente OAuth.
+    - Agrega tus URLs local y productiva en los redirect URLs permitidos de Supabase y en los orígenes/autorizados de Google.
+
+5.  **Ejecutar en desarrollo:**
     ```bash
     npm run dev
     ```
