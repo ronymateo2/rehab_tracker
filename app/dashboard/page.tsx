@@ -14,7 +14,7 @@ async function LesionList() {
 
   const { data: lesions, error } = await supabase
     .from('lesions')
-    .select(`*, sessions ( id, date, pain_level )`)
+    .select(`*, sessions ( id, date, pain_level, created_at )`)
     .eq('user_id', user.id)
     .eq('is_active', true)
     .order('created_at', { ascending: true })

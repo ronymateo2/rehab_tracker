@@ -8,19 +8,32 @@ interface LesionCardProps {
     name: string
     zone: string | null
     color: string
-    sessions?: { id: string; date: string; pain_level: number }[]
+    sessions?: { id: string; date: string; pain_level: number; created_at?: string }[]
   }
   isLast?: boolean
 }
 
 export default function LesionCard({ lesion, isLast = false }: LesionCardProps) {
-  const count = lesion.sessions?.length || 0
-  const last = count > 0 ? lesion.sessions![count - 1] : null
+  const sessions = lesion.sessions || []
+  const sessionsSorted = [...sessions].sort((a, b) => {
+    const aCreated = a.created_at ? new Date(a.created_at).getTime() : NaN
+    const bCreated = b.created_at ? new Date(b.created_at).getTime() : NaN
+
+    if (!Number.isNaN(aCreated) && !Number.isNaN(bCreated)) return aCreated - bCreated
+
+    // Fallback: at least keep a stable ordering when `created_at` isn't present.
+    const aDate = a.date ? new Date(a.date).getTime() : 0
+    const bDate = b.date ? new Date(b.date).getTime() : 0
+    return aDate - bDate
+  })
+
+  const count = sessionsSorted.length
+  const last = count > 0 ? sessionsSorted[count - 1] : null
   
   let trend = ''
   let trendColor = 'var(--text2)'
   if (count >= 2) {
-    const prev = lesion.sessions![count - 2].pain_level
+    const prev = sessionsSorted[count - 2].pain_level
     const curr = last!.pain_level
     if (curr < prev) { trend = '↘ Mejor'; trendColor = 'var(--green)' }
     else if (curr > prev) { trend = '↗ Peor'; trendColor = 'var(--red)' }

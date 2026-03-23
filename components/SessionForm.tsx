@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Plus, Loader2, Calendar as CalendarIcon, Activity } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import toast from 'react-hot-toast'
@@ -18,10 +18,27 @@ export default function SessionForm({ lesionId, userId }: SessionFormProps) {
   const [loading, setLoading] = useState(false)
   const supabase = createClient()
   const router = useRouter()
+  const openButtonRef = useRef<HTMLButtonElement | null>(null)
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null)
+  const dialogTitleId = 'session-form-title'
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : 'unset'
     return () => { document.body.style.overflow = 'unset' }
+  }, [isOpen])
+
+  useEffect(() => {
+    if (isOpen) closeButtonRef.current?.focus()
+    else openButtonRef.current?.focus()
+  }, [isOpen])
+
+  useEffect(() => {
+    if (!isOpen) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsOpen(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
   }, [isOpen])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,6 +71,8 @@ export default function SessionForm({ lesionId, userId }: SessionFormProps) {
       {/* Apple-style inline trigger — text button in page flow */}
       <button 
         onClick={() => setIsOpen(true)}
+        type="button"
+        ref={openButtonRef}
         className="flex items-center gap-1.5 text-[15px] font-medium active:opacity-60 transition-opacity"
         style={{ color: 'var(--accent)' }}
       >
@@ -65,33 +84,58 @@ export default function SessionForm({ lesionId, userId }: SessionFormProps) {
         <>
           <div className="fixed inset-0 z-[60]" style={{ background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }} onClick={() => setIsOpen(false)} />
           <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4 pointer-events-none">
-            <div className="w-full max-w-md pointer-events-auto max-h-[90vh] flex flex-col rounded-t-2xl sm:rounded-2xl" style={{ background: 'var(--card)', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
+            <div
+              className="w-full max-w-md pointer-events-auto max-h-[90vh] flex flex-col rounded-t-2xl sm:rounded-2xl"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={dialogTitleId}
+              tabIndex={-1}
+              style={{ background: 'var(--card)', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}
+            >
               <div className="w-9 h-[5px] rounded-full mx-auto mt-2 mb-1 sm:hidden" style={{ background: 'var(--divider)' }} />
               <div className="p-5 sm:p-6 overflow-y-auto hide-scrollbar">
                 <div className="flex justify-between items-center mb-5">
-                  <h3 className="text-[20px] font-bold" style={{ color: 'var(--text)' }}>Registrar Dolor</h3>
-                  <button onClick={() => setIsOpen(false)} className="w-7 h-7 rounded-full flex items-center justify-center text-[14px] active:scale-90" style={{ background: 'var(--subtle)', color: 'var(--text2)' }}>✕</button>
+                  <h3 id={dialogTitleId} className="text-[20px] font-bold" style={{ color: 'var(--text)' }}>Registrar Dolor</h3>
+                  <button
+                    type="button"
+                    ref={closeButtonRef}
+                    onClick={() => setIsOpen(false)}
+                    aria-label="Cerrar"
+                    className="w-7 h-7 rounded-full flex items-center justify-center text-[14px] active:scale-90"
+                    style={{ background: 'var(--subtle)', color: 'var(--text2)' }}
+                  >
+                    ✕
+                  </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div className="rounded-xl overflow-hidden" style={{ background: 'var(--subtle)' }}>
                     <div className="px-4 py-3 relative" style={{ borderBottom: '0.5px solid var(--divider)' }}>
-                      <label className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text2)' }}>
+                      <label htmlFor="session-date" className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text2)' }}>
                         <CalendarIcon className="w-3 h-3" /> Fecha
                       </label>
                       <div className="relative">
-                        <input type="date" value={date} onChange={e => setDate(e.target.value)} required className="w-full bg-transparent text-[15px] focus:outline-none date-clean" style={{ color: 'var(--text)' }} />
+                        <input
+                          id="session-date"
+                          type="date"
+                          value={date}
+                          onChange={e => setDate(e.target.value)}
+                          required
+                          className="w-full bg-transparent text-[15px] focus:outline-none date-clean"
+                          style={{ color: 'var(--text)' }}
+                        />
                         <CalendarIcon className="w-4 h-4 absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--text2)' }} />
                       </div>
                     </div>
                     <div className="px-4 py-3">
                       <div className="flex items-center justify-between mb-2">
-                        <label className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text2)' }}>
+                        <label htmlFor="session-intensity-range" className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text2)' }}>
                           <Activity className="w-3 h-3" /> Intensidad
                         </label>
                         <span className="text-[13px] font-bold tabular-nums" style={{ color: sliderColor }}>{painLevel}/10</span>
                       </div>
                       <input type="range" min="1" max="10" value={painLevel} onChange={e => setPainLevel(parseInt(e.target.value))}
+                        id="session-intensity-range"
                         className="w-full pain-intensity-range cursor-pointer"
                         style={{ ...rangeStyle, accentColor: sliderColor }} />
                       <div className="flex justify-between text-[10px] font-medium mt-1.5" style={{ color: 'var(--text2)' }}>
