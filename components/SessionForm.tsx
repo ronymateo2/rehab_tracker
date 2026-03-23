@@ -43,6 +43,11 @@ export default function SessionForm({ lesionId, userId }: SessionFormProps) {
   }
 
   const sliderColor = painLevel <= 3 ? 'var(--green)' : painLevel <= 6 ? 'var(--orange)' : 'var(--red)'
+  const rangeStyle = {
+    // Used by `pain-intensity-range` styles in `app/globals.css`.
+    '--range-bg': 'linear-gradient(90deg, var(--green), var(--orange), var(--red))',
+    '--thumb-bg': sliderColor,
+  } as React.CSSProperties
 
   return (
     <>
@@ -87,8 +92,8 @@ export default function SessionForm({ lesionId, userId }: SessionFormProps) {
                         <span className="text-[13px] font-bold tabular-nums" style={{ color: sliderColor }}>{painLevel}/10</span>
                       </div>
                       <input type="range" min="1" max="10" value={painLevel} onChange={e => setPainLevel(parseInt(e.target.value))}
-                        className="w-full h-[5px] rounded-full appearance-none cursor-pointer"
-                        style={{ background: 'linear-gradient(90deg, var(--green), var(--orange), var(--red))', accentColor: sliderColor }} />
+                        className="w-full pain-intensity-range cursor-pointer"
+                        style={{ ...rangeStyle, accentColor: sliderColor }} />
                       <div className="flex justify-between text-[10px] font-medium mt-1.5" style={{ color: 'var(--text2)' }}>
                         <span>Leve</span><span>Moderado</span><span>Severo</span>
                       </div>
