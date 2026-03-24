@@ -79,7 +79,7 @@ export default async function LesionPage({ params }: { params: { id: string } })
                 <span className="hidden sm:inline">{trendLabel}</span>
               </div>
             )}
-            <SessionForm lesionId={lesion.id} userId={user.id} />
+            <SessionForm lesionId={lesion.id} userId={user.id} defaultPainLevel={last?.pain_level ?? 5} />
           </div>
         </div>
 

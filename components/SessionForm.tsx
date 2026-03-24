@@ -7,12 +7,22 @@ import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 
-interface SessionFormProps { lesionId: string; userId: string }
+interface SessionFormProps {
+  lesionId: string
+  userId: string
+  defaultPainLevel?: number
+}
 
-export default function SessionForm({ lesionId, userId }: SessionFormProps) {
+const resolveDefaultPainLevel = (value?: number) => {
+  const raw = typeof value === 'number' && Number.isFinite(value) ? Math.round(value) : 5
+  return Math.min(10, Math.max(1, raw))
+}
+
+export default function SessionForm({ lesionId, userId, defaultPainLevel }: SessionFormProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'))
-  const [painLevel, setPainLevel] = useState(5)
+  const resolvedDefaultPainLevel = resolveDefaultPainLevel(defaultPainLevel)
+  const [painLevel, setPainLevel] = useState(() => resolvedDefaultPainLevel)
   const [exercises, setExercises] = useState('')
   const [notes, setNotes] = useState('')
   const [loading, setLoading] = useState(false)
@@ -41,6 +51,11 @@ export default function SessionForm({ lesionId, userId }: SessionFormProps) {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [isOpen])
 
+  useEffect(() => {
+    if (isOpen) return
+    setPainLevel(resolvedDefaultPainLevel)
+  }, [resolvedDefaultPainLevel, isOpen])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -54,7 +69,7 @@ export default function SessionForm({ lesionId, userId }: SessionFormProps) {
     if (error) { toast.error('Error: ' + error.message) }
     else {
       toast.success('Registro guardado')
-      setIsOpen(false); setDate(format(new Date(), 'yyyy-MM-dd')); setPainLevel(5); setExercises(''); setNotes('')
+      setIsOpen(false); setDate(format(new Date(), 'yyyy-MM-dd')); setPainLevel(resolvedDefaultPainLevel); setExercises(''); setNotes('')
       router.refresh()
     }
   }
@@ -70,7 +85,7 @@ export default function SessionForm({ lesionId, userId }: SessionFormProps) {
     <>
       {/* Apple-style inline trigger — text button in page flow */}
       <button 
-        onClick={() => setIsOpen(true)}
+        onClick={() => { setPainLevel(resolvedDefaultPainLevel); setIsOpen(true) }}
         type="button"
         ref={openButtonRef}
         className="flex items-center gap-1.5 text-[15px] font-medium active:opacity-60 transition-opacity"
