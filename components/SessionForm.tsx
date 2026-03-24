@@ -1,95 +1,128 @@
-'use client'
+"use client";
 
-import { useEffect, useRef, useState } from 'react'
-import { Plus, Loader2, Calendar as CalendarIcon, Activity } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
-import toast from 'react-hot-toast'
-import { useRouter } from 'next/navigation'
-import { format } from 'date-fns'
+import { useEffect, useRef, useState } from "react";
+import {
+  Plus,
+  Loader2,
+  Calendar as CalendarIcon,
+  Activity,
+} from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
+import { format } from "date-fns";
 
 interface SessionFormProps {
-  lesionId: string
-  userId: string
-  defaultPainLevel?: number
+  lesionId: string;
+  userId: string;
+  defaultPainLevel?: number;
 }
 
 const resolveDefaultPainLevel = (value?: number) => {
-  const raw = typeof value === 'number' && Number.isFinite(value) ? Math.round(value) : 5
-  return Math.min(10, Math.max(1, raw))
-}
+  const raw =
+    typeof value === "number" && Number.isFinite(value) ? Math.round(value) : 5;
+  return Math.min(10, Math.max(1, raw));
+};
 
-export default function SessionForm({ lesionId, userId, defaultPainLevel }: SessionFormProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'))
-  const resolvedDefaultPainLevel = resolveDefaultPainLevel(defaultPainLevel)
-  const [painLevel, setPainLevel] = useState(() => resolvedDefaultPainLevel)
-  const [exercises, setExercises] = useState('')
-  const [notes, setNotes] = useState('')
-  const [loading, setLoading] = useState(false)
-  const supabase = createClient()
-  const router = useRouter()
-  const openButtonRef = useRef<HTMLButtonElement | null>(null)
-  const closeButtonRef = useRef<HTMLButtonElement | null>(null)
-  const dialogTitleId = 'session-form-title'
-
-  useEffect(() => {
-    document.body.style.overflow = isOpen ? 'hidden' : 'unset'
-    return () => { document.body.style.overflow = 'unset' }
-  }, [isOpen])
-
-  useEffect(() => {
-    if (isOpen) closeButtonRef.current?.focus()
-    else openButtonRef.current?.focus()
-  }, [isOpen])
+export default function SessionForm({
+  lesionId,
+  userId,
+  defaultPainLevel,
+}: SessionFormProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const resolvedDefaultPainLevel = resolveDefaultPainLevel(defaultPainLevel);
+  const [painLevel, setPainLevel] = useState(() => resolvedDefaultPainLevel);
+  const [exercises, setExercises] = useState("");
+  const [notes, setNotes] = useState("");
+  const [loading, setLoading] = useState(false);
+  const supabase = createClient();
+  const router = useRouter();
+  const openButtonRef = useRef<HTMLButtonElement | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const hasOpenedRef = useRef(false);
+  const dialogTitleId = "session-form-title";
 
   useEffect(() => {
-    if (!isOpen) return
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsOpen(false)
+    document.body.style.overflow = isOpen ? "hidden" : "unset";
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen) {
+      hasOpenedRef.current = true;
+      closeButtonRef.current?.focus();
+      return;
     }
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [isOpen])
+    if (hasOpenedRef.current) openButtonRef.current?.focus();
+  }, [isOpen]);
 
   useEffect(() => {
-    if (isOpen) return
-    setPainLevel(resolvedDefaultPainLevel)
-  }, [resolvedDefaultPainLevel, isOpen])
+    if (!isOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen) return;
+    setPainLevel(resolvedDefaultPainLevel);
+  }, [resolvedDefaultPainLevel, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    const { error } = await supabase.from('sessions').insert({
-      user_id: userId, lesion_id: lesionId, date,
+    e.preventDefault();
+    setLoading(true);
+    const { error } = await supabase.from("sessions").insert({
+      user_id: userId,
+      lesion_id: lesionId,
+      date,
       pain_level: painLevel,
       exercises: exercises.trim() || null,
       notes: notes.trim() || null,
-    })
-    setLoading(false)
-    if (error) { toast.error('Error: ' + error.message) }
-    else {
-      toast.success('Registro guardado')
-      setIsOpen(false); setDate(format(new Date(), 'yyyy-MM-dd')); setPainLevel(resolvedDefaultPainLevel); setExercises(''); setNotes('')
-      router.refresh()
+    });
+    setLoading(false);
+    if (error) {
+      toast.error("Error: " + error.message);
+    } else {
+      toast.success("Registro guardado");
+      setIsOpen(false);
+      setDate(format(new Date(), "yyyy-MM-dd"));
+      setPainLevel(resolvedDefaultPainLevel);
+      setExercises("");
+      setNotes("");
+      router.refresh();
     }
-  }
+  };
 
-  const sliderColor = painLevel <= 3 ? 'var(--green)' : painLevel <= 6 ? 'var(--orange)' : 'var(--red)'
+  const sliderColor =
+    painLevel <= 3
+      ? "var(--green)"
+      : painLevel <= 6
+        ? "var(--orange)"
+        : "var(--red)";
   const rangeStyle = {
     // Used by `pain-intensity-range` styles in `app/globals.css`.
-    '--range-bg': 'linear-gradient(90deg, var(--green), var(--orange), var(--red))',
-    '--thumb-bg': sliderColor,
-  } as React.CSSProperties
+    "--range-bg":
+      "linear-gradient(90deg, var(--green), var(--orange), var(--red))",
+    "--thumb-bg": sliderColor,
+  } as React.CSSProperties;
 
   return (
     <>
       {/* Apple-style inline trigger — text button in page flow */}
-      <button 
-        onClick={() => { setPainLevel(resolvedDefaultPainLevel); setIsOpen(true) }}
+      <button
+        onClick={() => {
+          setPainLevel(resolvedDefaultPainLevel);
+          setIsOpen(true);
+        }}
         type="button"
         ref={openButtonRef}
         className="flex items-center gap-1.5 text-[15px] font-medium active:opacity-60 transition-opacity"
-        style={{ color: 'var(--accent)' }}
+        style={{ color: "var(--accent)" }}
       >
         <Plus className="w-4 h-4" />
         Registrar
@@ -97,7 +130,15 @@ export default function SessionForm({ lesionId, userId, defaultPainLevel }: Sess
 
       {isOpen && (
         <>
-          <div className="fixed inset-0 z-[60]" style={{ background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }} onClick={() => setIsOpen(false)} />
+          <div
+            className="fixed inset-0 z-[60]"
+            style={{
+              background: "rgba(0,0,0,0.35)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+            }}
+            onClick={() => setIsOpen(false)}
+          />
           <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4 pointer-events-none">
             <div
               className="w-full max-w-md pointer-events-auto max-h-[90vh] flex flex-col rounded-t-2xl sm:rounded-2xl"
@@ -105,28 +146,53 @@ export default function SessionForm({ lesionId, userId, defaultPainLevel }: Sess
               aria-modal="true"
               aria-labelledby={dialogTitleId}
               tabIndex={-1}
-              style={{ background: 'var(--card)', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}
+              style={{
+                background: "var(--card)",
+                boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)",
+              }}
             >
-              <div className="w-9 h-[5px] rounded-full mx-auto mt-2 mb-1 sm:hidden" style={{ background: 'var(--divider)' }} />
+              <div
+                className="w-9 h-[5px] rounded-full mx-auto mt-2 mb-1 sm:hidden"
+                style={{ background: "var(--divider)" }}
+              />
               <div className="p-5 sm:p-6 overflow-y-auto hide-scrollbar">
                 <div className="flex justify-between items-center mb-5">
-                  <h3 id={dialogTitleId} className="text-[20px] font-bold" style={{ color: 'var(--text)' }}>Registrar Dolor</h3>
+                  <h3
+                    id={dialogTitleId}
+                    className="text-[20px] font-bold"
+                    style={{ color: "var(--text)" }}
+                  >
+                    Registrar Dolor
+                  </h3>
                   <button
                     type="button"
                     ref={closeButtonRef}
                     onClick={() => setIsOpen(false)}
                     aria-label="Cerrar"
                     className="w-7 h-7 rounded-full flex items-center justify-center text-[14px] active:scale-90"
-                    style={{ background: 'var(--subtle)', color: 'var(--text2)' }}
+                    style={{
+                      background: "var(--subtle)",
+                      color: "var(--text2)",
+                    }}
                   >
                     ✕
                   </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
-                  <div className="rounded-xl overflow-hidden" style={{ background: 'var(--subtle)' }}>
-                    <div className="px-4 py-3 relative" style={{ borderBottom: '0.5px solid var(--divider)' }}>
-                      <label htmlFor="session-date" className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text2)' }}>
+                  <div
+                    className="rounded-xl overflow-hidden"
+                    style={{ background: "var(--subtle)" }}
+                  >
+                    <div
+                      className="px-4 py-3 relative"
+                      style={{ borderBottom: "0.5px solid var(--divider)" }}
+                    >
+                      <label
+                        htmlFor="session-date"
+                        className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider mb-1"
+                        style={{ color: "var(--text2)" }}
+                      >
                         <CalendarIcon className="w-3 h-3" /> Fecha
                       </label>
                       <div className="relative">
@@ -134,46 +200,106 @@ export default function SessionForm({ lesionId, userId, defaultPainLevel }: Sess
                           id="session-date"
                           type="date"
                           value={date}
-                          onChange={e => setDate(e.target.value)}
+                          onChange={(e) => setDate(e.target.value)}
                           required
                           className="w-full bg-transparent text-[15px] focus:outline-none date-clean"
-                          style={{ color: 'var(--text)' }}
+                          style={{ color: "var(--text)" }}
                         />
-                        <CalendarIcon className="w-4 h-4 absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--text2)' }} />
+                        <CalendarIcon
+                          className="w-4 h-4 absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none"
+                          style={{ color: "var(--text2)" }}
+                        />
                       </div>
                     </div>
                     <div className="px-4 py-3">
                       <div className="flex items-center justify-between mb-2">
-                        <label htmlFor="session-intensity-range" className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text2)' }}>
+                        <label
+                          htmlFor="session-intensity-range"
+                          className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider"
+                          style={{ color: "var(--text2)" }}
+                        >
                           <Activity className="w-3 h-3" /> Intensidad
                         </label>
-                        <span className="text-[13px] font-bold tabular-nums" style={{ color: sliderColor }}>{painLevel}/10</span>
+                        <span
+                          className="text-[13px] font-bold tabular-nums"
+                          style={{ color: sliderColor }}
+                        >
+                          {painLevel}/10
+                        </span>
                       </div>
-                      <input type="range" min="1" max="10" value={painLevel} onChange={e => setPainLevel(parseInt(e.target.value))}
+                      <input
+                        type="range"
+                        min="1"
+                        max="10"
+                        value={painLevel}
+                        onChange={(e) => setPainLevel(parseInt(e.target.value))}
                         id="session-intensity-range"
                         className="w-full pain-intensity-range cursor-pointer"
-                        style={{ ...rangeStyle, accentColor: sliderColor }} />
-                      <div className="flex justify-between text-[10px] font-medium mt-1.5" style={{ color: 'var(--text2)' }}>
-                        <span>Leve</span><span>Moderado</span><span>Severo</span>
+                        style={{ ...rangeStyle, accentColor: sliderColor }}
+                      />
+                      <div
+                        className="flex justify-between text-[10px] font-medium mt-1.5"
+                        style={{ color: "var(--text2)" }}
+                      >
+                        <span>Leve</span>
+                        <span>Moderado</span>
+                        <span>Severo</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="rounded-xl overflow-hidden" style={{ background: 'var(--subtle)' }}>
-                    <div className="px-4 py-3" style={{ borderBottom: '0.5px solid var(--divider)' }}>
-                      <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text2)' }}>Ejercicios</label>
-                      <textarea value={exercises} onChange={e => setExercises(e.target.value)} placeholder="Ej: 3×10 Rotación externa..." rows={2} className="w-full bg-transparent text-[15px] focus:outline-none resize-none" style={{ color: 'var(--text)' }} />
+                  <div
+                    className="rounded-xl overflow-hidden"
+                    style={{ background: "var(--subtle)" }}
+                  >
+                    <div
+                      className="px-4 py-3"
+                      style={{ borderBottom: "0.5px solid var(--divider)" }}
+                    >
+                      <label
+                        className="block text-[11px] font-semibold uppercase tracking-wider mb-1"
+                        style={{ color: "var(--text2)" }}
+                      >
+                        Ejercicios
+                      </label>
+                      <textarea
+                        value={exercises}
+                        onChange={(e) => setExercises(e.target.value)}
+                        placeholder="Ej: 3×10 Rotación externa..."
+                        rows={2}
+                        className="w-full bg-transparent text-[15px] focus:outline-none resize-none"
+                        style={{ color: "var(--text)" }}
+                      />
                     </div>
                     <div className="px-4 py-3">
-                      <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text2)' }}>Notas</label>
-                      <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Sensaciones, observaciones..." rows={2} className="w-full bg-transparent text-[15px] focus:outline-none resize-none" style={{ color: 'var(--text)' }} />
+                      <label
+                        className="block text-[11px] font-semibold uppercase tracking-wider mb-1"
+                        style={{ color: "var(--text2)" }}
+                      >
+                        Notas
+                      </label>
+                      <textarea
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        placeholder="Sensaciones, observaciones..."
+                        rows={2}
+                        className="w-full bg-transparent text-[15px] focus:outline-none resize-none"
+                        style={{ color: "var(--text)" }}
+                      />
                     </div>
                   </div>
 
-                  <button type="submit" disabled={loading}
+                  <button
+                    type="submit"
+                    disabled={loading}
                     className="w-full py-3.5 rounded-xl font-semibold text-[15px] text-white transition-all active:scale-[0.98] disabled:opacity-40 flex items-center justify-center"
-                    style={{ background: 'var(--accent)' }}>
-                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Guardar Registro'}
+                    style={{ background: "var(--accent)" }}
+                  >
+                    {loading ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      "Guardar Registro"
+                    )}
                   </button>
                 </form>
               </div>
@@ -182,5 +308,5 @@ export default function SessionForm({ lesionId, userId, defaultPainLevel }: Sess
         </>
       )}
     </>
-  )
+  );
 }
