@@ -3,15 +3,25 @@
 import { XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts'
 
 interface PainChartProps {
-  data: { id: string; displayDate: string; fullLabel: string; pain_level: number }[]
+  data: { id: string; displayDate: string; createdAt: string; pain_level: number }[]
   color: string
 }
 
-const CustomTooltip = ({ active, payload }: { active?: boolean, payload?: { value: number; payload: { fullLabel: string } }[] }) => {
+const formatCreatedAt = (value: string) =>
+  new Intl.DateTimeFormat('es-CO', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).format(new Date(value))
+
+const CustomTooltip = ({ active, payload }: { active?: boolean, payload?: { value: number; payload: { createdAt: string } }[] }) => {
   if (active && payload && payload.length) {
     return (
       <div className="px-3.5 py-2.5 rounded-xl text-center" style={{ background: 'var(--card)', boxShadow: 'var(--shadow-lg)', border: '0.5px solid var(--divider)' }}>
-        <p className="text-[11px] font-medium" style={{ color: 'var(--text2)' }}>{payload[0].payload.fullLabel}</p>
+        <p className="text-[11px] font-medium" style={{ color: 'var(--text2)' }}>{formatCreatedAt(payload[0].payload.createdAt)}</p>
         <p className="text-[17px] font-bold mt-0.5" style={{ color: 'var(--text)' }}>
           {payload[0].value}<span className="text-[12px] font-normal" style={{ color: 'var(--text2)' }}> / 10</span>
         </p>

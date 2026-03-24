@@ -5,6 +5,7 @@ import { ArrowLeft, Activity, TrendingDown, TrendingUp, Minus, Dumbbell, StickyN
 import PainChart from '@/components/PainChart'
 import SessionForm from '@/components/SessionForm'
 import DeleteLesionButton from '@/components/DeleteLesionButton'
+import BrowserDateTime from '@/components/BrowserDateTime'
 import { format, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { painColor } from '@/lib/utils'
@@ -34,7 +35,7 @@ export default async function LesionPage({ params }: { params: { id: string } })
   const chartData = ascSessions.map((s, i) => ({
     id: s.id || i.toString(),
     displayDate: format(parseISO(s.date), 'd MMM', { locale: es }),
-    fullLabel: format(parseISO(s.created_at), "d MMM yyyy, HH:mm", { locale: es }),
+    createdAt: s.created_at,
     pain_level: s.pain_level
   }))
 
@@ -135,7 +136,13 @@ export default async function LesionPage({ params }: { params: { id: string } })
                           <p className="text-[15px] font-medium" style={{ color: 'var(--text)' }}>
                             {format(parseISO(s.date), 'd MMM yyyy', { locale: es })}
                             <span className="mx-1.5" style={{ color: 'var(--text2)', opacity: 0.3 }}>·</span>
-                            <span className="text-[13px] font-normal" style={{ color: 'var(--text2)' }}>{format(parseISO(s.created_at), 'HH:mm')}</span>
+                            <BrowserDateTime
+                              value={s.created_at}
+                              format="time"
+                              fallback={format(parseISO(s.created_at), 'HH:mm')}
+                              className="text-[13px] font-normal"
+                              style={{ color: 'var(--text2)' }}
+                            />
                           </p>
                           <p className="text-[12px] capitalize" style={{ color: 'var(--text2)' }}>
                             {format(parseISO(s.date), 'EEEE', { locale: es })}
